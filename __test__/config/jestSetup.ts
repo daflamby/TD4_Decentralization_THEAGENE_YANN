@@ -1,6 +1,6 @@
 import request from "supertest"; 
-import { simpleOnionRouter } from "../src/onionRouters/simpleOnionRouter";
-import { BASE_ONION_ROUTER_PORT } from "../src/config";
+import { simpleOnionRouter } from "C:/Users/yanna/TD4_Decentralization_THEAGENE_YANN/src/onionRouters/simpleOnionRouter.ts";
+import { BASE_ONION_ROUTER_PORT } from "C:/Users/yanna/TD4_Decentralization_THEAGENE_YANN/src/config.ts";
 
 let server: ReturnType<typeof simpleOnionRouter>; // Explicit type
 
