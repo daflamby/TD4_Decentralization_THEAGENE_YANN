@@ -27,10 +27,4 @@
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", ".vscode", "prisma"]
-  {
-  "compilerOptions": {
-    "moduleResolution": "node"
-  }
-}
-
 }
