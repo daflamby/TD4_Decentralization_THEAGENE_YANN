@@ -9,12 +9,16 @@ export type SendMessageBody = {
 
 export async function user(userId: number) {
   const _user = express();
+
+  // Use express built-in middleware for JSON parsing
   _user.use(express.json());
-  _user.use(bodyParser.json());
 
-  // TODO implement the status route
-  // _user.get("/status", (req, res) => {});
+  // Implement the /status route
+  _user.get("/status", (req, res) => {
+    res.send("live");
+  });
 
+  // Start the server on the port determined by BASE_USER_PORT + userId
   const server = _user.listen(BASE_USER_PORT + userId, () => {
     console.log(
       `User ${userId} is listening on port ${BASE_USER_PORT + userId}`
@@ -23,3 +27,4 @@ export async function user(userId: number) {
 
   return server;
 }
+
