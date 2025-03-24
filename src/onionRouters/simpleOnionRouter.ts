@@ -1,5 +1,5 @@
 import express, { Express, Request, Response } from "express";
-import { createServer, Server } from "http"; // ✅ Import Server from 'http'
+import { createServer, Server } from "http"; // ✅ Import Server
 import { BASE_ONION_ROUTER_PORT } from "../config";
 
 export async function simpleOnionRouter(nodeId: number): Promise<Server> {
@@ -11,16 +11,22 @@ export async function simpleOnionRouter(nodeId: number): Promise<Server> {
   });
 
   onionRouter.post("/relay", (req: Request, res: Response) => {
-    const { data, nextNode } = req.body;
+    try {
+      const { data, nextNode } = req.body;
 
-    if (!data || !nextNode) {
-      return res.status(400).json({ error: "Invalid request payload" });
+      if (!data || !nextNode) {
+        return res.status(400).json({ error: "Invalid request payload" });
+      }
+
+      console.log(`Node ${nodeId} received data:`, data);
+      console.log(`Forwarding to next node: ${nextNode}`);
+
+      // Always return a response
+      return res.status(200).json({ message: "Data relayed successfully" });
+    } catch (error) {
+      console.error("Error in relay:", error);
+      return res.status(500).json({ error: "Internal server error" });
     }
-
-    console.log(`Node ${nodeId} received data:`, data);
-    console.log(`Forwarding to next node: ${nextNode}`);
-
-    res.status(200).json({ message: "Data relayed successfully" });
   });
 
   return new Promise((resolve, reject) => {
