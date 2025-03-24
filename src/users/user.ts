@@ -1,30 +1,14 @@
-import bodyParser from "body-parser";
-import express from "express";
-import { BASE_USER_PORT } from "../config";
+import { user } from "./user";
 
-export type SendMessageBody = {
-  message: string;
-  destinationUserId: number;
-};
+export async function launchUsers(n: number) {
+  const promises = [];
 
-export async function user(userId: number) {
-  const _user = express();
+  for (let index = 0; index < n; index++) {
+    const newPromise = user(index);
+    promises.push(newPromise);
+  }
 
-  // Use express built-in middleware for JSON parsing
-  _user.use(express.json());
+  const servers = await Promise.all(promises);
 
-  // Implement the /status route
-  _user.get("/status", (req, res) => {
-    res.send("live");
-  });
-
-  // Start the server on the port determined by BASE_USER_PORT + userId
-  const server = _user.listen(BASE_USER_PORT + userId, () => {
-    console.log(
-      `User ${userId} is listening on port ${BASE_USER_PORT + userId}`
-    );
-  });
-
-  return server;
+  return servers;
 }
-
