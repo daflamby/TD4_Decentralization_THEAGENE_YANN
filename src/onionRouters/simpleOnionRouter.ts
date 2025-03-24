@@ -1,45 +1,53 @@
-import express, { Express, Request, Response } from "express";
-import { createServer, Server } from "http"; // ✅ Import Server
-import { BASE_ONION_ROUTER_PORT } from "C:/Users/yanna/TD4_Decentralization_THEAGENE_YANN/src/config.ts";
+import bodyParser from "body-parser";
+import express from "express";
+import { BASE_ONION_ROUTER_PORT } from "../config";
 
-export async function simpleOnionRouter(nodeId: number): Promise<Server> {
-  const onionRouter: Express = express();
+
+
+export async function simpleOnionRouter(nodeId: number) {
+  const onionRouter = express();
   onionRouter.use(express.json());
+  onionRouter.use(bodyParser.json());
 
-  onionRouter.get("/status", (req: Request, res: Response) => {
-    res.status(200).send({ message: "Onion router is live" });
+  let lastReceivedEncryptedMessage: string | null = null;
+  let lastReceivedDecryptedMessage: string | null = null;
+  let lastMessageDestination: string | null = null;
+  
+  onionRouter.post("/relayMessage", async (req, res) => {
+    const { message, nextNodeId } = req.body;
+    lastReceivedEncryptedMessage = message;
+    lastMessageDestination = nextNodeId;
+    
+  
+    res.send("Message relayed successfully");
+  });
+  
+  // TODO implement the status route
+  onionRouter.get("/status", (req, res) => {
+    res.send("live");
+  });
+  onionRouter.get('/getLastReceivedEncryptedMessage' , (req, res) => {
+    res.send({"result":lastReceivedEncryptedMessage});
   });
 
-  onionRouter.post("/relay", (req: Request, res: Response) => {
-    try {
-      const { data, nextNode } = req.body;
 
-      if (!data || !nextNode) {
-        return res.status(400).json({ error: "Invalid request payload" });
-      }
-
-      console.log(`Node ${nodeId} received data:`, data);
-      console.log(`Forwarding to next node: ${nextNode}`);
-
-      // Always return a response
-      return res.status(200).json({ message: "Data relayed successfully" });
-    } catch (error) {
-      console.error("Error in relay:", error);
-      return res.status(500).json({ error: "Internal server error" });
-    }
+  onionRouter.get('/getLastReceivedDecryptedMessage' , (req, res) => {
+    res.send({"result":lastReceivedDecryptedMessage});
   });
 
-  return new Promise((resolve, reject) => {
-    const server: Server = createServer(onionRouter);
-
-    server.listen(BASE_ONION_ROUTER_PORT + nodeId, () => {
-      console.log(`Onion router ${nodeId} is running on port ${BASE_ONION_ROUTER_PORT + nodeId}`);
-      resolve(server);
-    });
-
-    server.on("error", (err) => {
-      console.error(`Error starting Onion Router ${nodeId}:`, err);
-      reject(err);
-    });
+  onionRouter.get('/getLastMessageDestination' , (req, res) => {
+    res.send({"result":lastMessageDestination});
   });
+
+  
+
+  const server = onionRouter.listen(BASE_ONION_ROUTER_PORT + nodeId, () => {
+    console.log(
+      `Onion router ${nodeId} is listening on port ${
+        BASE_ONION_ROUTER_PORT + nodeId
+      }`
+    );
+  });
+
+  return server;
 }
