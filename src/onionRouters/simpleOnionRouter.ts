@@ -2,7 +2,7 @@ import bodyParser from "body-parser";
 import express from "express";
 import axios from "axios";
 import { BASE_ONION_ROUTER_PORT, REGISTRY_PORT } from "../config";
-import { generateRsaKeyPair, exportPrvKey, rsaDecrypt, importSymKey, symDecrypt } from "../crypto";
+import { rsaDecrypt, symDecrypt, importSymKey } from "../crypto";
 
 let lastReceivedEncryptedMessage: string | null = null;
 let lastReceivedDecryptedMessage: string | null = null;
@@ -17,7 +17,7 @@ async function generateKeyPair() {
 }
 
 export async function simpleOnionRouter(nodeId: number) {
-  const { publicKey, privateKey } = await generateRsaKeyPair();
+  const { publicKey, privateKey } = await generateKeyPair();
 
   const onionRouter = express();
   onionRouter.use(express.json());
@@ -71,10 +71,16 @@ export async function simpleOnionRouter(nodeId: number) {
     const actualMessage = decryptedMessage.slice(10);
     lastMessageDestination = destination;
 
-    // Forward the message to the next destination
-    await axios.post(`http://localhost:${destination}/message`, { message: actualMessage });
-
-    res.status(200).send("Message forwarded");
+    // Check if we are at the final destination
+    if (destination === nodeId) {
+      // If this node is the destination, process the message
+      console.log(`Message for destination ${nodeId}: ${actualMessage}`);
+      res.status(200).send("Final destination received the message");
+    } else {
+      // Forward the message to the next node in the route
+      await axios.post(`http://localhost:${destination}/message`, { message: actualMessage });
+      res.status(200).send("Message forwarded to the next node");
+    }
   });
 
   const server = onionRouter.listen(BASE_ONION_ROUTER_PORT + nodeId, () => {
