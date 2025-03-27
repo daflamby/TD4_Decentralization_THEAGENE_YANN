@@ -2,77 +2,87 @@ import bodyParser from "body-parser";
 import express from "express";
 import axios from "axios";
 import { BASE_ONION_ROUTER_PORT, REGISTRY_PORT } from "../config";
-import { generateRsaKeyPair, exportPubKey, exportPrvKey, rsaDecrypt, importSymKey, symDecrypt } from "../crypto"; // Assurez-vous d'importer exportPubKey
+import { generateRsaKeyPair, exportPrvKey, rsaDecrypt, importSymKey, symDecrypt } from "../crypto";
 
-// Variables pour stocker les derniers messages reçus et envoyés
 let lastReceivedEncryptedMessage: string | null = null;
 let lastReceivedDecryptedMessage: string | null = null;
 let lastMessageDestination: number | null = null;
 
 async function generateKeyPair() {
-  const keyPair = await generateRsaKeyPair();
+  // Placeholder for key generation logic
   return {
-    publicKey: keyPair.publicKey,
-    privateKey: keyPair.privateKey,
+    publicKey: "publicKeyString",
+    privateKey: "privateKeyString",
   };
 }
 
 export async function simpleOnionRouter(nodeId: number) {
-  const { publicKey, privateKey } = await generateKeyPair();
+  const { publicKey, privateKey } = await generateRsaKeyPair();
 
   const onionRouter = express();
   onionRouter.use(express.json());
   onionRouter.use(bodyParser.json());
 
-  // Enregistrer le nœud auprès du registre
+  // Register the node on the registry
   await axios.post(`http://localhost:${REGISTRY_PORT}/registerNode`, {
     nodeId,
-    pubKey: await exportPubKey(publicKey),  // Appel à exportPubKey pour obtenir la clé publique sous forme de chaîne
+    pubKey: publicKey,
   });
 
+  // Implement the status route
   onionRouter.get("/status", (req, res) => {
     res.status(200).send("live");
   });
 
+  // Implement the getLastReceivedEncryptedMessage route
   onionRouter.get("/getLastReceivedEncryptedMessage", (req, res) => {
     res.status(200).json({ result: lastReceivedEncryptedMessage });
   });
 
+  // Implement the getLastReceivedDecryptedMessage route
   onionRouter.get("/getLastReceivedDecryptedMessage", (req, res) => {
     res.status(200).json({ result: lastReceivedDecryptedMessage });
   });
 
+  // Implement the getLastMessageDestination route
   onionRouter.get("/getLastMessageDestination", (req, res) => {
     res.status(200).json({ result: lastMessageDestination });
   });
 
+  // Implement the message route
   onionRouter.post("/message", async (req, res) => {
     const { message } = req.body;
     lastReceivedEncryptedMessage = message;
 
-    // Déchiffrer la clé symétrique RSA
-    const rsaEncryptedKey = message.slice(0, 344); // Ajustez la taille selon votre clé RSA
+    // Decrypt the RSA encrypted symmetric key
+    const rsaEncryptedKey = message.slice(0, 344); // 344 is the length of RSA encrypted key in base64
     const symEncryptedMessage = message.slice(344);
     const decryptedSymKey = await rsaDecrypt(rsaEncryptedKey, privateKey);
 
-    // Importer la clé symétrique et déchiffrer le message
+    // Import the decrypted symmetric key
     const symmetricKey = await importSymKey(decryptedSymKey);
-    const decryptedMessage = await symDecrypt(symmetricKey, symEncryptedMessage);
+
+    // Decrypt the message with the symmetric key
+    const decryptedMessage = await symDecrypt(decryptedSymKey, symEncryptedMessage);
     lastReceivedDecryptedMessage = decryptedMessage;
 
-    // Extraire la destination et le message réel
+    // Extract the destination and the actual message
     const destination = parseInt(decryptedMessage.slice(0, 10), 10);
     const actualMessage = decryptedMessage.slice(10);
     lastMessageDestination = destination;
 
-    // Forward le message vers la prochaine destination
+    // Forward the message to the next destination
     await axios.post(`http://localhost:${destination}/message`, { message: actualMessage });
 
     res.status(200).send("Message forwarded");
   });
 
   const server = onionRouter.listen(BASE_ONION_ROUTER_PORT + nodeId, () => {
-    console.log(`Onion router ${nodeId} is listening on port ${BASE_ONION_ROUTER_PORT + nodeId}`);
+    console.log(
+      `Onion router ${nodeId} is listening on port ${
+        BASE_ONION_ROUTER_PORT + nodeId
+      }`
+    );
   });
 
   return server;
