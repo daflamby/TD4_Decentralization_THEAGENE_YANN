@@ -25,8 +25,7 @@ export async function launchRegistry() {
   });
 
   // Implement the registerNode route
-  // src/registry/registry.ts
- _registry.post("/registerNode", (req: Request, res: Response) => {
+  _registry.post("/registerNode", (req: Request, res: Response) => {
     const { nodeId, pubKey } = req.body as RegisterNodeBody;
     nodeRegistry.push({ nodeId, pubKey });
     res.status(200).send("Node registered successfully");
