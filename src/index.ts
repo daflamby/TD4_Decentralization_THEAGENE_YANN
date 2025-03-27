@@ -1,33 +1,6 @@
 import { launchOnionRouters } from "./onionRouters/launchOnionRouters";
 import { launchRegistry } from "./registry/registry";
 import { launchUsers } from "./users/launchUsers";
-// index.ts
-// index.ts
-
-// index.ts
-
-import { Crypto } from 'webcrypto-liner';
-
-// Aucune instance de Crypto nécessaire, on peut accéder directement à crypto.subtle
-globalThis.crypto = new Crypto();
-
-// Exemple de génération d'une clé AES-GCM
-const generateKey = async () => {
-  const key = await crypto.subtle.generateKey(
-    {
-      name: "AES-GCM",
-      length: 256,
-    },
-    true, // La clé peut être exportée
-    ["encrypt", "decrypt"]
-  );
-
-  console.log("Clé générée :", key);
-};
-
-// Appel de la fonction pour générer la clé
-generateKey().catch((error) => console.error("Erreur:", error));
-
 
 export async function launchNetwork(nbNodes: number, nbUsers: number) {
   // launch node registry
