@@ -25,11 +25,18 @@ export async function launchRegistry() {
   });
 
   // Implement the registerNode route
-  _registry.post("/registerNode", (req: Request, res: Response) => {
-    const { nodeId, pubKey } = req.body as RegisterNodeBody;
+  // src/registry/registry.ts
+_registry.post("/registerNode", (req: Request, res: Response) => {
+  const { nodeId, pubKey } = req.body as RegisterNodeBody;
+  
+  // Ajouter une vérification pour éviter l'ajout de nœuds en double
+  if (!nodeRegistry.some((node) => node.nodeId === nodeId)) {
     nodeRegistry.push({ nodeId, pubKey });
     res.status(200).send("Node registered successfully");
-  });
+  } else {
+    res.status(400).send("Node already registered");
+  }
+});
 
   // Implement the getNodeRegistry route
   _registry.get("/getNodeRegistry", (req, res) => {
