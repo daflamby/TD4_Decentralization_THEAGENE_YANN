@@ -1,4 +1,4 @@
-src/onionRouters/simpleOnionRouter.ts: import bodyParser from "body-parser"; 
+import bodyParser from "body-parser"; 
 import express from "express";
 import axios from "axios";
 import { BASE_ONION_ROUTER_PORT, REGISTRY_PORT } from "../config";
