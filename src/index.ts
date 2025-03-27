@@ -4,13 +4,12 @@ import { launchUsers } from "./users/launchUsers";
 // index.ts
 // index.ts
 
+// index.ts
+
 import { Crypto } from 'webcrypto-liner';
 
-// Crée une instance de Crypto (au lieu de WebCrypto)
-const webCrypto = new Crypto();
-
-// Ajoute le polyfill globalement
-globalThis.crypto = webCrypto;
+// Aucune instance de Crypto nécessaire, on peut accéder directement à crypto.subtle
+globalThis.crypto = new Crypto();
 
 // Exemple de génération d'une clé AES-GCM
 const generateKey = async () => {
