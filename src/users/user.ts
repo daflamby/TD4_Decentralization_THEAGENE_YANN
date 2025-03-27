@@ -1,4 +1,4 @@
-import bodyParser from "body-parser";
+src/users/user.ts: import bodyParser from "body-parser"; 
 import express from "express";
 import axios from "axios";
 import { BASE_USER_PORT, REGISTRY_PORT } from "../config";
