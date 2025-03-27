@@ -1,5 +1,5 @@
 import bodyParser from "body-parser";
-import express, { Request, Response } from "express";
+import express from "express";
 import axios from "axios";
 import { BASE_USER_PORT, REGISTRY_PORT } from "../config";
 import { generateRsaKeyPair, exportPubKey, rsaEncrypt, createRandomSymmetricKey, exportSymKey, symEncrypt } from "../crypto";
@@ -21,46 +21,32 @@ export async function user(userId: number) {
   _user.use(express.json());
   _user.use(bodyParser.json());
 
-  // Generate RSA key pair for the user
-  const { publicKey, privateKey } = await generateRsaKeyPair();
-
-  // Register the user on the registry
-  await axios.post(`http://localhost:${REGISTRY_PORT}/registerNode`, {
-    nodeId: userId,
-    pubKey: publicKey,
-  });
-
-  // Implement the status route
   _user.get("/status", (req, res) => {
     res.status(200).send("live");
   });
 
-  // Implement the getLastReceivedMessage route
   _user.get("/getLastReceivedMessage", (req, res) => {
     res.status(200).json({ result: lastReceivedMessage });
   });
 
-  // Implement the getLastSentMessage route
   _user.get("/getLastSentMessage", (req, res) => {
     res.status(200).json({ result: lastSentMessage });
   });
 
-  // Implement the message route to receive messages
-  _user.post("/message", (req: Request, res: Response) => {
+  _user.post("/message", (req, res) => {
     const { message } = req.body as MessageBody;
     lastReceivedMessage = message;
     res.status(200).send("Message received");
   });
 
-  // Implement the sendMessage route to send encrypted messages
-  _user.post("/sendMessage", async (req: Request, res: Response) => {
+  _user.post("/sendMessage", async (req, res) => {
     const { message, destinationUserId } = req.body as SendMessageBody;
 
-    // Fetch the node registry to get the list of all nodes
+    // Fetch the node registry
     const registryResponse = await axios.get(`http://localhost:${REGISTRY_PORT}/getNodeRegistry`);
     const nodes = registryResponse.data.nodes;
 
-    // Select 3 distinct nodes randomly for routing
+    // Select 3 distinct nodes randomly
     const selectedNodes: { nodeId: number; pubKey: string }[] = [];
     while (selectedNodes.length < 3) {
       const randomNode = nodes[Math.floor(Math.random() * nodes.length)];
