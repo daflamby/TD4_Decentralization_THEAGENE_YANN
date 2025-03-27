@@ -3,6 +3,40 @@ import { webcrypto } from "crypto";
 // #############
 // ### Utils ###
 // #############
+// Importation de la clé à partir d'une chaîne (ex. base64)
+export async function importKey(key: string): Promise<CryptoKey> {
+  const importedKey = await crypto.subtle.importKey(
+    "jwk",
+    JSON.parse(atob(key)), // ou convertissez de base64 à l'objet
+    { name: "RSA-OAEP", hash: { name: "SHA-256" } },
+    true,
+    ["decrypt", "encrypt"]
+  );
+  return importedKey;
+}
+
+// Exportation de la clé publique en base64 (par exemple)
+export async function exportPubKey(publicKey: CryptoKey): Promise<string> {
+  const exportedKey = await crypto.subtle.exportKey("spki", publicKey);
+  return btoa(String.fromCharCode(...new Uint8Array(exportedKey))); // base64 encoding
+}
+
+// Exportation de la clé privée en base64 (par exemple)
+export async function exportPrvKey(privateKey: CryptoKey): Promise<string> {
+  const exportedKey = await crypto.subtle.exportKey("pkcs8", privateKey);
+  return btoa(String.fromCharCode(...new Uint8Array(exportedKey))); // base64 encoding
+}
+
+// Déchiffrement RSA
+export async function rsaDecrypt(encrypted: string, privateKey: string): Promise<string> {
+  const privKey = await importKey(privateKey);  // Importation de la clé privée
+  const decryptedBuffer = await crypto.subtle.decrypt(
+    { name: "RSA-OAEP" },
+    privKey,
+    new Uint8Array(atob(encrypted).split("").map((c) => c.charCodeAt(0)))
+  );
+  return new TextDecoder().decode(decryptedBuffer);
+}
 
 // Convert ArrayBuffer to Base64 string
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
