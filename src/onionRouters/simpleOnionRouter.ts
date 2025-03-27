@@ -2,7 +2,7 @@ import bodyParser from "body-parser";
 import express from "express";
 import axios from "axios";
 import { BASE_ONION_ROUTER_PORT, REGISTRY_PORT } from "../config";
-import { generateRsaKeyPair, exportPrvKey, rsaDecrypt, importSymKey, symDecrypt } from "../crypto";
+import { generateRsaKeyPair, exportPrvKey, rsaDecrypt, importSymKey, symDecrypt, exportPubKey  } from "../crypto";
 
 // Variables pour stocker les derniers messages reçus et envoyés
 let lastReceivedEncryptedMessage: string | null = null;
