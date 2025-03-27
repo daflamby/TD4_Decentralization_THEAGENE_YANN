@@ -1,4 +1,4 @@
-import bodyParser from "body-parser";
+src/registry/registry.ts:  import bodyParser from "body-parser"; 
 import express, { Request, Response } from "express";
 import { REGISTRY_PORT } from "../config";
 
