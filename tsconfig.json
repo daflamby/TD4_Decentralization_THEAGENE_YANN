@@ -4,7 +4,7 @@
     "target": "ESNext",
     "lib": ["ES2022"],
     "module": "CommonJS",
-    "moduleResolution": "node",
+    "moduleResolution": "Node",
     "resolveJsonModule": true,
     "allowJs": true,
     "baseUrl": "./",
